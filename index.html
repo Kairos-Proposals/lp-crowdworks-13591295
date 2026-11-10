@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kairos 提案 | AIコンテンツ自動生成・マルチSNS配信システム構築</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-deep:#0B1626;
+    --bg-panel:#101F35;
+    --bg-panel2:#142A46;
+    --accent-teal:#3DDC97;
+    --accent-amber:#F2A65A;
+    --accent-violet:#8B7FD6;
+    --text-main:#ECF1F7;
+    --text-sub:#8FA3BC;
+    --line-soft:rgba(143,163,188,0.18);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg-deep);
+    color:var(--text-main);
+    font-family:'Noto Sans JP', sans-serif;
+    font-weight:400;
+    line-height:1.85;
+    overflow-x:hidden;
+  }
+  h1,h2,h3,h4{
+    font-family:'Space Grotesk','Noto Sans JP',sans-serif;
+    font-weight:700;
+    letter-spacing:0.01em;
+  }
+  a{color:inherit;}
+  .wrap{
+    max-width:1120px;
+    margin:0 auto;
+    padding:0 24px;
+  }
+  .tag-label{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    font-family:'Space Grotesk',sans-serif;
+    font-size:12px;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    color:var(--accent-teal);
+  }
+  .tag-label::before{
+    content:"";
+    width:18px; height:1px;
+    background:var(--accent-teal);
+  }
+
+  /* ===== background texture ===== */
+  .bg-grid{
+    position:fixed;
+    inset:0;
+    z-index:-2;
+    background-image:
+      radial-gradient(circle at 15% 20%, rgba(61,220,151,0.08), transparent 40%),
+      radial-gradient(circle at 85% 10%, rgba(139,127,214,0.10), transparent 45%),
+      radial-gradient(circle at 70% 90%, rgba(242,166,90,0.06), transparent 40%),
+      linear-gradient(180deg, #0B1626 0%, #0E1C30 50%, #0B1626 100%);
+  }
+  .bg-grid::after{
+    content:"";
+    position:absolute; inset:0;
+    background-image:
+      linear-gradient(var(--line-soft) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px);
+    background-size:64px 64px;
+    opacity:0.35;
+    mask-image:radial-gradient(ellipse at center, black 0%, transparent 75%);
+  }
+
+  /* ===== HERO ===== */
+  header.hero{
+    position:relative;
+    padding:88px 0 60px;
+    min-height:92vh;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+  }
+  .brandbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:60px;
+  }
+  .brand{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:18px;
+    font-weight:600;
+    letter-spacing:0.08em;
+  }
+  .brand span{color:var(--accent-teal);}
+  .brandbar small{
+    color:var(--text-sub);
+    font-size:12px;
+    letter-spacing:0.08em;
+  }
+
+  .hero-grid{
+    display:grid;
+    grid-template-columns:1.1fr 0.9fr;
+    gap:40px;
+    align-items:center;
+  }
+  .hero-copy h1{
+    font-size:clamp(32px, 5vw, 54px);
+    line-height:1.35;
+    margin:18px 0 22px;
+  }
+  .hero-copy h1 em{
+    font-style:normal;
+    background:linear-gradient(90deg, var(--accent-teal), var(--accent-violet));
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+  }
+  .hero-copy p{
+    color:var(--text-sub);
+    font-size:16px;
+    max-width:48ch;
+    margin-bottom:28px;
+  }
+  .hero-sub-line{
+    display:flex;
+    gap:14px;
+    flex-wrap:wrap;
+    margin-top:30px;
+  }
+  .pill{
+    font-size:12.5px;
+    padding:7px 14px;
+    border:1px solid var(--line-soft);
+    border-radius:100px;
+    color:var(--text-sub);
+    background:rgba(255,255,255,0.02);
+  }
+
+  /* network diagram */
+  .diagram-box{
+    position:relative;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+  }
+  .diagram-box svg{
+    width:100%;
+    max-width:420px;
+    height:auto;
+  }
+  .node-label{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:600;
+  }
+  .pulse-line{
+    stroke-dasharray:5 7;
+    animation:dash 2.4s linear infinite;
+  }
+  @keyframes dash{ to{ stroke-dashoffset:-48; } }
+  .pulse-dot{
+    animation:blink 2.4s ease-in-out infinite;
+  }
+  @keyframes blink{
+    0%,100%{opacity:0.3;}
+    50%{opacity:1;}
+  }
+
+  /* ===== SECTION COMMON ===== */
+  section{
+    padding:100px 0;
+    position:relative;
+  }
+  .sec-head{
+    max-width:680px;
+    margin-bottom:56px;
+  }
+  .sec-head h2{
+    font-size:clamp(26px,3.6vw,38px);
+    margin-top:14px;
+    line-height:1.5;
+  }
+  .sec-head p{
+    color:var(--text-sub);
+    margin-top:16px;
+    font-size:15.5px;
+  }
+
+  /* ===== UNDERSTANDING SECTION ===== */
+  .understand{
+    background:
+      linear-gradient(180deg, transparent, rgba(16,31,53,0.6) 10%, rgba(16,31,53,0.6) 90%, transparent);
+  }
+  .understand-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:24px;
+  }
+  .u-card{
+    border:1px solid var(--line-soft);
+    border-radius:14px;
+    padding:28px 24px;
+    background:linear-gradient(160deg, rgba(255,255,255,0.025), transparent);
+  }
+  .u-card .num{
+    font-family:'Space Grotesk',sans-serif;
+    color:var(--accent-amber);
+    font-size:13px;
+    letter-spacing:0.1em;
+  }
+  .u-card h3{
+    font-size:18px;
+    margin:12px 0 10px;
+  }
+  .u-card p{
+    font-size:14px;
+    color:var(--text-sub);
+  }
+  .understand-note{
+    margin-top:40px;
+    padding:26px 28px;
+    border-left:3px solid var(--accent-teal);
+    background:rgba(61,220,151,0.05);
+    border-radius:4px;
+    font-size:15px;
+    color:var(--text-main);
+  }
+  .understand-note b{color:var(--accent-teal);}
+
+  /* ===== VALUE CARDS ===== */
+  .value-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:22px;
+  }
+  .v-card{
+    position:relative;
+    border-radius:16px;
+    padding:30px 26px;
+    border:1px solid var(--line-soft);
+    background:var(--bg-panel);
+    overflow:hidden;
+    transition:transform .35s ease, border-color .35s ease;
+  }
+  .v-card:hover{
+    transform:translateY(-6px);
+    border-color:var(--accent-teal);
+  }
+  .v-card::before{
+    content:"";
+    position:absolute;
+    top:-40px; right:-40px;
+    width:120px; height:120px;
+    border-radius:50%;
+    background:var(--grad, radial-gradient(circle, rgba(61,220,151,0.25), transparent 70%));
+    filter:blur(2px);
+  }
+  .v-icon{
+    width:44px; height:44px;
+    border-radius:10px;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:16px;
+    margin-bottom:18px;
+    color:#0B1626;
+  }
+  .v-card h3{
+    font-size:18px;
+    margin-bottom:10px;
+  }
+  .v-card p{
+    font-size:14px;
+    color:var(--text-sub);
+  }
+  .v-card .tech{
+    margin-top:14px;
+    font-size:12px;
+    color:var(--accent-amber);
+    letter-spacing:0.02em;
+  }
+
+  /* ===== PROCESS ===== */
+  .process{
+    background:var(--bg-panel);
+    border-top:1px solid var(--line-soft);
+    border-bottom:1px solid var(--line-soft);
+  }
+  .timeline{
+    position:relative;
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:18px;
+  }
+  .timeline::before{
+    content:"";
+    position:absolute;
+    top:22px; left:0; right:0;
+    height:1px;
+    background:linear-gradient(90deg, var(--accent-teal), var(--accent-violet), var(--accent-amber));
+    opacity:0.4;
+  }
+  .t-item{
+    position:relative;
+    padding-top:50px;
+  }
+  .t-dot{
+    position:absolute;
+    top:10px; left:0;
+    width:24px; height:24px;
+    border-radius:50%;
+    background:var(--bg-deep);
+    border:2px solid var(--accent-teal);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Space Grotesk',sans-serif;
+    font-size:11px;
+    font-weight:700;
+    color:var(--accent-teal);
+  }
+  .t-item h4{
+    font-size:15.5px;
+    margin-bottom:8px;
+  }
+  .t-item p{
+    font-size:13px;
+    color:var(--text-sub);
+  }
+
+  /* ===== CLOSING ===== */
+  .closing{
+    text-align:center;
+    padding:120px 0 140px;
+  }
+  .closing h2{
+    font-size:clamp(28px,4.2vw,44px);
+    line-height:1.5;
+    max-width:720px;
+    margin:16px auto 20px;
+  }
+  .closing p{
+    color:var(--text-sub);
+    max-width:520px;
+    margin:0 auto 36px;
+  }
+  .cta-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    padding:18px 38px;
+    border-radius:100px;
+    background:linear-gradient(90deg, var(--accent-teal), #2fb584);
+    color:#07160F;
+    font-weight:700;
+    font-family:'Space Grotesk',sans-serif;
+    text-decoration:none;
+    font-size:15px;
+    box-shadow:0 20px 50px -15px rgba(61,220,151,0.5);
+    transition:transform .3s ease;
+  }
+  .cta-btn:hover{transform:translateY(-3px);}
+  .closing-sub{
+    margin-top:40px;
+    display:flex;
+    justify-content:center;
+    gap:30px;
+    flex-wrap:wrap;
+    font-size:13px;
+    color:var(--text-sub);
+  }
+  footer{
+    padding:30px 0;
+    border-top:1px solid var(--line-soft);
+    text-align:center;
+    font-size:12px;
+    color:var(--text-sub);
+  }
+
+  @media (max-width:860px){
+    .hero-grid{grid-template-columns:1fr;}
+    .understand-grid{grid-template-columns:1fr;}
+    .value-grid{grid-template-columns:1fr 1fr;}
+    .timeline{grid-template-columns:1fr 1fr;}
+    .timeline::before{display:none;}
+  }
+  @media (max-width:560px){
+    .value-grid{grid-template-columns:1fr;}
+    .timeline{grid-template-columns:1fr;}
+    .brandbar{flex-direction:column; align-items:flex-start; gap:8px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="brandbar">
+      <div class="brand">Kairos<span>.</span> Dev Studio</div>
+      <small>PROPOSAL FOR — hmllp_柳澤研 様</small>
+    </div>
+
+    <div class="hero-grid">
+      <div class="hero-copy">
+        <span class="tag-label">Kairosからのご提案</span>
+        <h1>ひとつの記事が、<br><em>眠らず四方へ</em> 届いていく。</h1>
+        <p>
+          X・LinkedIn・Threads・Bluesky——投稿先が増えるほど、人の手は追いつかなくなります。
+          Kairosは、記事やサービス情報を起点に「生成・最適化・配信・監視」までを
+          止まらず回し続ける仕組みを、小さく確実な一歩から設計します。
+        </p>
+        <div class="hero-sub-line">
+          <span class="pill">生成AI × SNS自動投稿</span>
+          <span class="pill">MVPからの段階拡張</span>
+          <span class="pill">将来のマルチクライアント対応</span>
+        </div>
+      </div>
+
+      <div class="diagram-box">
+        <svg viewBox="0 0 400 400" fill="none">
+          <line class="pulse-line" x1="200" y1="200" x2="200" y2="72" stroke="#3DDC97" stroke-width="2"/>
+          <line class="pulse-line" x1="200" y1="200" x2="320" y2="200" stroke="#8B7FD6" stroke-width="2"/>
+          <line class="pulse-line" x1="200" y1="200" x2="200" y2="328" stroke="#F2A65A" stroke-width="2"/>
+          <line class="pulse-line" x1="200" y1="200" x2="80" y2="200" stroke="#6FD9F0" stroke-width="2"/>
+
+          <circle class="pulse-dot" cx="200" cy="140" r="3" fill="#3DDC97"/>
+          <circle class="pulse-dot" cx="260" cy="200" r="3" fill="#8B7FD6" style="animation-delay:.4s"/>
+          <circle class="pulse-dot" cx="200" cy="264" r="3" fill="#F2A65A" style="animation-delay:.8s"/>
+          <circle class="pulse-dot" cx="140" cy="200" r="3" fill="#6FD9F0" style="animation-delay:1.2s"/>
+
+          <circle cx="200" cy="200" r="46" fill="#101F35" stroke="#3DDC97" stroke-width="1.5"/>
+          <text x="200" y="196" text-anchor="middle" fill="#ECF1F7" font-size="12" class="node-label">WEB</text>
+          <text x="200" y="212" text-anchor="middle" fill="#8FA3BC" font-size="10">メディア原稿</text>
+
+          <circle cx="200" cy="60" r="30" fill="#0B1626" stroke="#3DDC97" stroke-width="1.5"/>
+          <text x="200" y="65" text-anchor="middle" fill="#3DDC97" font-size="15" class="node-label">X</text>
+
+          <circle cx="340" cy="200" r="30" fill="#0B1626" stroke="#8B7FD6" stroke-width="1.5"/>
+          <text x="340" y="205" text-anchor="middle" fill="#8B7FD6" font-size="13" class="node-label">in</text>
+
+          <circle cx="200" cy="340" r="30" fill="#0B1626" stroke="#F2A65A" stroke-width="1.5"/>
+          <text x="200" y="345" text-anchor="middle" fill="#F2A65A" font-size="13" class="node-label">@</text>
+
+          <circle cx="60" cy="200" r="30" fill="#0B1626" stroke="#6FD9F0" stroke-width="1.5"/>
+          <text x="60" y="205" text-anchor="middle" fill="#6FD9F0" font-size="13" class="node-label">bsky</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="understand">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="tag-label">We Understand</span>
+      <h2>これは「投稿の自動化」ではなく、<br>情報発信の“運用体制”そのものの再設計です。</h2>
+      <p>募集内容を拝見し、単なるBotの構築ではなく、将来の横展開を見据えた基盤づくりだと理解しています。</p>
+    </div>
+
+    <div class="understand-grid">
+      <div class="u-card">
+        <div class="num">01 / コピペ運用の限界</div>
+        <h3>プラットフォームごとに手が足りない</h3>
+        <p>X・LinkedIn・Threads・Bluesky——それぞれ文字数も文体も読者層も異なります。手作業での最適化は、更新頻度が上がるほど破綻します。</p>
+      </div>
+      <div class="u-card">
+        <div class="num">02 / 作り切らない設計思想</div>
+        <h3>最初から完璧を求めていない</h3>
+        <p>「すべての機能を初期実装する必要はない」というご要望を、私たちは信頼と受け取りました。壊れにくいMVPから積み上げます。</p>
+      </div>
+      <div class="u-card">
+        <div class="num">03 / 事業としての拡張性</div>
+        <h3>自社運用から、クライアント提供へ</h3>
+        <p>将来的に他企業へ横展開することを前提にした、アカウント・権限・コストの構造設計が必要だと理解しています。</p>
+      </div>
+    </div>
+
+    <div class="understand-note">
+      <b>だからこそ</b>、私たちは「動くものを早く」ではなく「運用し続けられるものを、早く」つくることを目指します。
+      ツールは n8n / Make / GAS のいずれでも構いません。重要なのは、御社の運用コストと将来像に合わせた構成選定です。
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="tag-label">What Kairos Provides</span>
+      <h2>Kairosが設計・実装する5つの価値</h2>
+      <p>生成AIの“賢さ”と、運用の“軽さ”を両立させるための具体的な提供範囲です。</p>
+    </div>
+
+    <div class="value-grid">
+      <div class="v-card" style="--grad:radial-gradient(circle, rgba(61,220,151,0.3), transparent 70%)">
+        <div class="v-icon" style="background:var(--accent-teal)">AI</div>
+        <h3>マルチLLMオーケストレーション</h3>
+        <p>ChatGPT / Claude / Geminiを用途ごとに使い分け、SNSごとの文体・文字数・トーンに自動最適化する生成パイプラインを構築します。</p>
+        <div class="tech">GPT-4o / Claude 3.5 / Gemini 1.5</div>
+      </div>
+
+      <div class="v-card" style="--grad:radial-gradient(circle, rgba(139,127,214,0.3), transparent 70%)">
+        <div class="v-icon" style="background:var(--accent-violet)">⇄</div>
+        <h3>マルチプラットフォーム配信基盤</h3>
+        <p>X・LinkedIn・Threads・Bluesky各APIの仕様差を吸収し、予約投稿・複数アカウント管理を一元化する配信エンジンを設計します。</p>
+        <div class="tech">公式API / OAuth管理 / レート制御</div>
+      </div>
+
+      <div class="v-card" style="--grad:radial-gradient(circle, rgba(242,166,90,0.3), transparent 70%)">
+        <div class="v-icon" style="background:var(--accent-amber)">✓</div>
+        <h3>承認フロー・ガバナンス設計</h3>
+        <p>投稿前の確認・承認機能、投稿履歴とエラーの可視化を実装し、「AI任せで放置」にならない安心設計を行います。</p>
+        <div class="tech">Slack / Chatwork通知連携 可</div>
+      </div>
+
+      <div class="v-card" style="--grad:radial-gradient(circle, rgba(111,217,240,0.3), transparent 70%)">
+        <div class="v-icon" style="background:#6FD9F0">◎</div>
+        <h3>スモールスタート設計</h3>
+        <p>最小構成（1〜2SNS・1アカウント）で確実に稼働させ、その後の機能追加・対象拡大がしやすいモジュール構成で実装します。</p>
+        <div class="tech">MVP → Phase拡張前提の設計</div>
+      </div>
+
+      <div class="v-card" style="--grad:radial-gradient(circle, rgba(61,220,151,0.25), transparent 70%)">
+        <div class="v-icon" style="background:var(--accent-teal)">¥</div>
+        <h3>運用コスト最適化</h3>
+        <p>n8n / GAS / Makeの特性を踏まえ、API従量課金と開発コストのバランスを見て、保守しやすく安価な構成をご提案します。</p>
+        <div class="tech">月額運用費の概算も初回でご提示</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="process">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="tag-label">How We Proceed</span>
+      <h2>段階的に育てる、5つのフェーズ</h2>
+      <p>すべてを一度に作らず、実用可能な最小構成から着実に積み上げます。</p>
+    </div>
+
+    <div class="timeline">
+      <div class="t-item">
+        <div class="t-dot">0</div>
+        <h4>要件すり合わせ</h4>
+        <p>対象SNS・コンテンツ元・運用体制をヒアリングし、構成とツール選定を確定します。</p>
+      </div>
+      <div class="t-item">
+        <div class="t-dot">1</div>
+        <h4>MVP構築</h4>
+        <p>記事→生成→1〜2SNSへの予約投稿までを、手動承認付きで最短稼働させます。</p>
+      </div>
+      <div class="t-item">
+        <div class="t-dot">2</div>
+        <h4>対象SNS拡張</h4>
+        <p>X・LinkedIn・Threads・Blueskyへ順次対応。文体最適化ロジックを拡充します。</p>
+      </div>
+      <div class="t-item">
+        <div class="t-dot">3</div>
+        <h4>運用監視強化</h4>
+        <p>複数アカウント管理、投稿履歴・エラー監視、通知フローを整備します。</p>
+      </div>
+      <div class="t-item">
+        <div class="t-dot">4</div>
+        <h4>マルチクライアント化</h4>
+        <p>他社・他ブランドへの横展開を見据えた、テナント構造への拡張を設計します。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="closing">
+  <div class="wrap">
+    <span class="tag-label">Next Action</span>
+    <h2>まずは30分、<br>構成案の壁打ちからはじめませんか。</h2>
+    <p>開発環境・ツール構成・概算費用など、応募項目に沿って具体的にご回答いたします。<br>継続的なご相談も歓迎です。</p>
+    <a class="cta-btn" href="#">Kairosに相談する →</a>
+    <div class="closing-sub">
+      <span>✓ 初回概算費用・納期のご提示</span>
+      <span>✓ ソースコード・運用マニュアル納品可</span>
+      <span>✓ 継続開発体制あり</span>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    Kairos Dev Studio — Web制作・システム開発チーム / Proposal for hmllp_柳澤研 様
+  </div>
+</footer>
+
+</body>
+</html>
